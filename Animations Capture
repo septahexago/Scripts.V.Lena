@@ -1,0 +1,103 @@
+print("a")
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+local ui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+ui.Name = "AnimSaverUI"
+ui.ResetOnSpawn = false
+ui.IgnoreGuiInset = true
+
+local frame = Instance.new("Frame", ui)
+frame.Position = UDim2.fromScale(1, 0.5)
+frame.AnchorPoint = Vector2.new(1, 0.5)
+frame.Size = UDim2.fromScale(0.2, 0.2)
+frame.BackgroundTransparency = 1
+
+local layout = Instance.new("UIListLayout", frame)
+
+local status = Instance.new("TextLabel", frame)
+status.Size = UDim2.fromScale(1, 0.5)
+status.TextScaled = true
+status.Text = ""
+status.BackgroundTransparency = 1
+status.TextColor3 = Color3.fromRGB(0, 255, 0)
+
+local function adjuststatus(txt)
+	status.Text = txt
+end
+
+local folder -- store here so save() can use it
+
+local function initialize()
+    -- create folder if it doesn’t exist
+    folder = ReplicatedStorage:FindFirstChild("NEW_ANIMS")
+    if not folder then
+        folder = Instance.new("Folder", ReplicatedStorage)
+        folder.Name = "NEW_ANIMS"
+    end
+
+    -- heartbeat loop to track animations
+    RunService.Heartbeat:Connect(function()
+        for _, plr in ipairs(Players:GetPlayers()) do
+            local char = plr.Character
+            if char then
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+                        if track.Animation and track.Animation.AnimationId ~= "" then
+                            local animId = track.Animation.AnimationId:gsub("rbxassetid://", "")
+                            local animName = track.Name ~= "" and track.Name or ("Anim_" .. animId)
+                            local uniqueName = animName
+
+                            -- avoid duplicate saves
+                            if not folder:FindFirstChild(uniqueName) then
+                                adjuststatus("Saved " .. uniqueName)
+                                local animValue = Instance.new("StringValue", folder)
+                                animValue.Name = uniqueName
+                                animValue.Value = "rbxassetid://" .. animId
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function save()
+	local Params = {
+		RepoURL = "https://raw.githubusercontent.com/luau/SynSaveInstance/main/",
+		SSI = "saveinstance",
+	}
+	local synsaveinstance = loadstring(game:HttpGet(Params.RepoURL .. Params.SSI .. ".luau", true), Params.SSI)()
+	local Options = {
+		Object = folder,
+	}
+	synsaveinstance(Options)
+end
+
+-- UI
+local initBtn = Instance.new("TextButton", frame)
+initBtn.Text = "INITIALIZE"
+initBtn.TextScaled = true
+initBtn.BackgroundTransparency = 1
+initBtn.Size = UDim2.fromScale(1, 0.5)
+
+initBtn.Activated:Connect(function()
+	adjuststatus("Initialized")
+	initialize()
+	initBtn:Destroy()
+
+	local saveBtn = Instance.new("TextButton", frame)
+	saveBtn.Text = "SAVE"
+	saveBtn.TextScaled = true
+	saveBtn.BackgroundTransparency = 1
+	saveBtn.Size = UDim2.fromScale(1, 0.5)
+	saveBtn.Activated:Connect(function()
+		adjuststatus("Saving now")
+		save()
+	end)
+end)
