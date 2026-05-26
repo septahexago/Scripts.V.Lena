@@ -47,5 +47,5 @@ local Params = {
  SSI = "saveinstance",
 }
 local synsaveinstance = loadstring(game:HttpGet(Params.RepoURL .. Params.SSI .. ".luau", true), Params.SSI)()
-local Options = {ShutdownWhenDone = false, SaveBytecode = false, IgnoreList = nil, NilInstances = true, RemovePlayerCharacters = false, IsolateLocalPlayer = true, IgnoreDefaultPlayerScripts = false} -- Documentation here https://luau.github.io/UniversalSynSaveInstance/api/SynSaveInstance
+local Options = {ShutdownWhenDone = false, SaveBytecode = false, IgnoreList = nil, NilInstances = true, RemovePlayerCharacters = false, IsolateLocalPlayer = true, IgnoreDefaultPlayerScripts = true} -- Documentation here https://luau.github.io/UniversalSynSaveInstance/api/SynSaveInstance
 synsaveinstance(Options)
